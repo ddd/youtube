@@ -134,6 +134,10 @@ impl<'a> ListChannelsRequest<'a> {
             request_builder = request_builder.header("Authorization", bearer_token);
         }
 
+        if let Some(referrer) = self.fields.referrer {
+            request_builder = request_builder.header("Referer", referrer);
+        }
+
         let req = request_builder
             .body(Empty::new())
             .map_err(|e| YouTubeError::Other(Box::new(e)))?;

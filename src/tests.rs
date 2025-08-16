@@ -581,3 +581,40 @@ async fn test_list_playlist_items_pagination() -> Result<(), Box<dyn Error>> {
     
     Ok(())
 }
+
+
+#[tokio::test]
+async fn test_get_popular_video() -> Result<(), Box<dyn std::error::Error>> {
+    // Video ID: jNQXAC9IVRw - should be a popular video with engagement
+    let client = initialize_client()?;
+    let mut youtube_client = YouTubeDataV3Client::new("youtube.googleapis.com".to_string(), client).await;
+    
+    let videos = youtube_client
+        .list_videos(vec!["jNQXAC9IVRw".to_string()])
+        .with_key(API_KEY)
+        .with_referrer("https://explorer.apis.google.com")
+        .send()
+        .await?;
+    
+    assert_eq!(videos.len(), 1);
+    let video = &videos[0];
+    
+    // Basic field checks
+    assert_eq!(video.video_id, "jNQXAC9IVRw");
+    assert!(video.user_id.is_some());
+    
+    // Ensure the video has engagement metrics > 0
+    assert!(video.views > 0, "Video should have views > 0, got {}", video.views);
+    assert!(video.likes > 0, "Video should have likes > 0, got {}", video.likes);
+    assert!(video.comments > 0, "Video should have comments > 0, got {}", video.comments);
+    
+    // Should be public and processed
+    assert_eq!(video.privacy_status, 2); // public
+    assert_eq!(video.upload_status, 2);  // processed
+    
+    // Should have basic metadata
+    assert!(video.title.is_some());
+    assert!(video.created_at > 0);
+    
+    Ok(())
+}
