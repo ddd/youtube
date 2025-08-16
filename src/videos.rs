@@ -89,7 +89,7 @@ impl<'a> ListVideosRequest<'a> {
         let ids_str = self.video_ids.join(",");
 
         let url = format!(
-            "https://{}/youtube/v3/videos?part=status,snippet,id&id={}", 
+            "https://{}/youtube/v3/videos?part=status,snippet,id,statistics&id={}", 
             self.ip, 
             ids_str
         );
@@ -106,6 +106,10 @@ impl<'a> ListVideosRequest<'a> {
 
         if let Some(bearer_token) = self.fields.bearer_token {
             request_builder = request_builder.header("Authorization", bearer_token);
+        }
+
+        if let Some(referrer) = self.fields.referrer {
+            request_builder = request_builder.header("Referer", referrer);
         }
 
         let req = request_builder
